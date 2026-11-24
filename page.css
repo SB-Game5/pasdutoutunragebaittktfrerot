@@ -1,0 +1,533 @@
+
+/* ========================================
+   CONFIGURATION GÉNÉRALE
+======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #090b1c, #17113b, #090b1c);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+}
+
+.quiz-container {
+    width: 100%;
+    max-width: 750px;
+    position: relative;
+}
+
+
+/* ========================================
+   CASES À COCHER CACHÉES
+======================================== */
+
+.state {
+    display: none;
+}
+
+
+/* ========================================
+   AFFICHAGE DES QUESTIONS
+======================================== */
+
+.question {
+    display: none;
+    position: relative;
+    width: 100%;
+    padding: 45px;
+    background: #171a32;
+    border: 2px solid #6250e8;
+    border-radius: 18px;
+    box-shadow: 0 0 25px rgba(98, 80, 232, 0.25);
+    text-align: center;
+}
+
+/* Première question affichée par défaut */
+
+.q1 {
+    display: block;
+}
+
+/* Passage d'une question à la suivante */
+
+body:has(#done1:checked) .q1 {
+    display: none;
+}
+
+body:has(#done1:checked) .q2 {
+    display: block;
+}
+
+body:has(#done2:checked) .q2 {
+    display: none;
+}
+
+body:has(#done2:checked) .q3 {
+    display: block;
+}
+
+body:has(#done3:checked) .q3 {
+    display: none;
+}
+
+body:has(#done3:checked) .q4 {
+    display: block;
+}
+
+body:has(#done4:checked) .q4 {
+    display: none;
+}
+
+body:has(#done4:checked) .q5 {
+    display: block;
+}
+
+body:has(#done5:checked) .q5 {
+    display: none;
+}
+
+body:has(#done5:checked) .finish-page {
+    display: block;
+}
+
+
+/* ========================================
+   TITRES
+======================================== */
+
+.question h2 {
+    color: #8b7cff;
+    font-size: 18px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.question h3 {
+    font-size: 25px;
+    margin-bottom: 35px;
+    line-height: 1.4;
+}
+
+
+/* ========================================
+   RÉPONSES
+======================================== */
+
+.answers {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 35px;
+}
+
+.answers label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 17px 20px;
+    background: #242746;
+    border: 2px solid #373c68;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.answers label:hover {
+    background: #30345c;
+    border-color: #8b7cff;
+    transform: translateY(-2px);
+}
+
+.answers input {
+    accent-color: #806bff;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+
+/* ========================================
+   BOUTONS DE VALIDATION
+======================================== */
+
+.action-area {
+    position: relative;
+    width: 100%;
+    height: 55px;
+}
+
+.validate {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 55px;
+
+    background: linear-gradient(90deg, #6546e8, #2878ff);
+    border: none;
+    border-radius: 10px;
+
+    color: white;
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 2px;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    box-shadow: 0 5px 0 #29206c;
+    transition: 0.2s;
+}
+
+.validate:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+.validate-start,
+.validate-finish {
+    position: absolute;
+    inset: 0;
+}
+
+/* Afficher le premier bouton si une réponse est sélectionnée */
+
+.question:has(.answer:checked) .validate-start {
+    display: flex;
+}
+
+/* Masquer le premier bouton après son utilisation */
+
+body:has(#trap1:checked) .q1 .validate-start,
+body:has(#trap2:checked) .q2 .validate-start,
+body:has(#trap3:checked) .q3 .validate-start,
+body:has(#trap4:checked) .q4 .validate-start,
+body:has(#trap5:checked) .q5 .validate-start {
+    display: none;
+}
+
+/* Afficher le deuxième bouton après avoir trouvé la croix */
+
+body:has(#found1:checked) .q1 .validate-finish,
+body:has(#found2:checked) .q2 .validate-finish,
+body:has(#found3:checked) .q3 .validate-finish,
+body:has(#found4:checked) .q4 .validate-finish,
+body:has(#found5:checked) .q5 .validate-finish {
+    display: flex;
+}
+
+
+/* ========================================
+   PUBLICITÉS SURPRISE
+======================================== */
+
+.trap-overlay {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+
+    background: rgba(8, 8, 20, 0.25);
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 25px;
+
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Fond composé d'images répétées */
+
+.trap-overlay::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+
+    background-repeat: repeat;
+    background-size: 180px auto;
+
+    opacity: 0.5;
+    filter: drop-shadow(0 0 12px #8c42ff);
+
+    animation: background-swing 8s ease-in-out infinite alternate;
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Images de fond selon la question */
+
+.q1 .trap-overlay::before {
+    background-image: url("images/asap.png");
+}
+
+.q2 .trap-overlay::before {
+    background-image: url("images/lil%20uzi%20vert.webp");
+}
+
+.q3 .trap-overlay::before {
+    background-image: url("images/miku.webp");
+}
+
+.q4 .trap-overlay::before {
+    background-image: url("images/teto.webp");
+}
+
+.q5 .trap-overlay::before {
+    background-image: url("images/captain.webp");
+}
+
+
+/* Animation du fond */
+
+@keyframes background-swing {
+    0% {
+        transform: rotate(-8deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(5deg) scale(1.08);
+    }
+
+    100% {
+        transform: rotate(-5deg) scale(1);
+    }
+}
+
+
+/* Grande image centrale */
+
+.trap-overlay .main-ad {
+    position: relative;
+    z-index: 2;
+
+    height: 55vh;
+    width: auto;
+    max-width: 90vw;
+
+    object-fit: contain;
+
+    animation:
+            ad-swing 2.5s ease-in-out infinite,
+            ad-glow 1.5s ease-in-out infinite alternate;
+}
+
+
+/* Balancement de l'image */
+
+@keyframes ad-swing {
+    0% {
+        transform: rotate(-7deg);
+    }
+
+    50% {
+        transform: rotate(7deg);
+    }
+
+    100% {
+        transform: rotate(-7deg);
+    }
+}
+
+
+/* Surbrillance autour de l'image */
+
+@keyframes ad-glow {
+    from {
+        filter:
+                drop-shadow(0 0 10px #55aaff)
+                drop-shadow(0 0 20px #55aaff);
+    }
+
+    to {
+        filter:
+                drop-shadow(0 0 25px #a044ff)
+                drop-shadow(0 0 45px #a044ff);
+    }
+}
+
+
+/* Texte sous l'image */
+
+.trap-overlay .hint {
+    display: block;
+    position: relative;
+    z-index: 3;
+
+    color: white;
+    font-size: 17px;
+    font-weight: 900;
+    text-align: center;
+
+    background: #171923;
+    border: 2px solid #ffd45c;
+    border-radius: 8px;
+
+    padding: 12px 20px;
+
+    box-shadow: 0 0 15px #ffd45c;
+}
+
+
+/* ========================================
+   DÉCLENCHEMENT DES PUBLICITÉS
+======================================== */
+
+body:has(#trap1:checked):not(:has(#found1:checked)) .q1 .trap-overlay,
+body:has(#trap2:checked):not(:has(#found2:checked)) .q2 .trap-overlay,
+body:has(#trap3:checked):not(:has(#found3:checked)) .q3 .trap-overlay,
+body:has(#trap4:checked):not(:has(#found4:checked)) .q4 .trap-overlay,
+body:has(#trap5:checked):not(:has(#found5:checked)) .q5 .trap-overlay {
+    display: flex;
+}
+
+
+/* ========================================
+   CROIX CACHÉES
+======================================== */
+
+.cross {
+    display: none;
+
+    position: fixed;
+    z-index: 25;
+
+    color: white;
+    font-size: 22px;
+    opacity: 0.12;
+
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+
+    transition: 0.2s;
+}
+
+.cross:hover {
+    opacity: 1;
+    color: #55aaff;
+    transform: scale(1.3);
+}
+
+
+/* Positions des croix */
+
+.cross-1 {
+    top: 12px;
+    right: 20px;
+}
+
+.cross-2 {
+    bottom: 15px;
+    left: 20px;
+}
+
+.cross-3 {
+    top: 45%;
+    left: 12px;
+}
+
+.cross-4 {
+    top: 18%;
+    right: 8%;
+}
+
+.cross-5 {
+    bottom: 8%;
+    right: 12%;
+}
+
+
+/* Afficher la croix correspondant à la publicité */
+
+body:has(#trap1:checked):not(:has(#found1:checked)) .q1 .cross-1,
+body:has(#trap2:checked):not(:has(#found2:checked)) .q2 .cross-2,
+body:has(#trap3:checked):not(:has(#found3:checked)) .q3 .cross-3,
+body:has(#trap4:checked):not(:has(#found4:checked)) .q4 .cross-4,
+body:has(#trap5:checked):not(:has(#found5:checked)) .q5 .cross-5 {
+    display: block;
+}
+
+
+/* ========================================
+   PAGE DE FIN
+======================================== */
+
+.finish-page {
+    display: none;
+
+    width: 100%;
+    padding: 45px;
+
+    background: #171a32;
+    border: 2px solid #6250e8;
+    border-radius: 18px;
+
+    box-shadow: 0 0 25px rgba(98, 80, 232, 0.25);
+
+    text-align: center;
+}
+
+.finish-page h2 {
+    color: #8b7cff;
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+.finish-page p {
+    margin-bottom: 30px;
+    font-size: 17px;
+}
+
+.continue {
+    display: flex;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 600px) {
+
+    .question {
+        padding: 25px 18px;
+    }
+
+    .question h3 {
+        font-size: 20px;
+    }
+
+    .answers label {
+        padding: 14px;
+    }
+
+    .trap-overlay .main-ad {
+        height: 45vh;
+        max-width: 95vw;
+    }
+
+    .trap-overlay .hint {
+        font-size: 14px;
+    }
+
+    .finish-page {
+        padding: 30px 20px;
+    }
+}
