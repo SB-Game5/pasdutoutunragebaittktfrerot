@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="main">
+        <h1>Créer un compte</h1>
+
+        <form id="register-form">
+            <label for="email">eMail :</label>
+            <input type="email" id="email" name="email" placeholder="ton eMail" required>
+
+            <br>
+
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" placeholder="Choisis un mot de passe" minlength="6" maxlength="7" required>
+
+            <br>
+
+            <label for="confirm-password">Confirmer le mot de passe :</label>
+            <input type="password" id="confirm-password" name="confirm-password" placeholder="Répète le mot de passe" minlength="6" maxlength="7" required>
+
+            <div class="wrap">
+                <button type="submit">Créer mon compte</button>
+            </div>
+        </form>
+
+        <p id="message" role="alert"></p>
+        <p><a href="login.html">Retour à la connexion</a></p>
+    </main>
+
+    <script>
+        const form = document.querySelector("#register-form");
+        const message = document.querySelector("#message");
+        let A = null;
+        let B = null;
+        let C = null;
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(hash))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const email = document.querySelector("#email").value.trim().toLowerCase();
+            const password = document.querySelector("#password").value;
+            // const age = document.querySelector("#age").value.trim().toLowerCase();
+            const confirmation = document.querySelector("#confirm-password").value;
+            let captchaFields = form.querySelectorAll(".captcha-field");
+
+            if (password !== confirmation) {
+                message.textContent = "Les mots de passe ne correspondent pas.";
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+            if (users.some(user => user.email === email)) {
+                message.textContent = "Cette adresse eMail est déjà enregistrée.";
+                return;
+            }
+            if (A === null || B === null || C === null) {
+                A = Math.floor(Math.random() * 137500) + 1;
+                B = Math.floor(Math.random() * 137500) + 1;
+                C = A + B;
+            }
+            const captchaChallenges = [
+                {
+                    label: "âge",
+                    type: "number",
+                    validate: value => {
+                        const age = Number(value);
+                        return Number.isInteger(age) && age >= 1 && age <= 120;
+                    }
+                },
+                {
+                    label: `Combien font ${A} + ${B} ?`,
+                    type: "number",
+                    validate: value => Number(value) === C
+                },
+                {
+                    label: `entrer la réponse du <a href="https://www.nytimes.com/games/wordle/index.html" target="_blank" rel="noopener noreferrer">wordle</a> d'aujourd'hui`,
+                    type: "text",
+                    answer: "SNEER"
+                }
+            ];
+
+            for (let index = 0; index < captchaFields.length; index++) {
+                const challenge = captchaChallenges[index];
+                const value = captchaFields[index].value.trim();
+                const answer = value.toUpperCase();
+                const isValid = challenge.validate
+                    ? challenge.validate(value)
+                    : answer === challenge.answer;
+
+                if (!isValid) {
+                    message.textContent = `Champ ${index + 1} incorrect.`;
+                    captchaFields[index].focus();
+                    return;
+                }
+            }
+
+            if (captchaFields.length < captchaChallenges.length) {
+                const challengeIndex = captchaFields.length;
+                const challenge = captchaChallenges[challengeIndex];
+                const fieldContainer = document.createElement("div");
+                fieldContainer.className = "captcha-field-container";
+                fieldContainer.innerHTML = `
+                    <br>
+                    <label for="captcha-${challengeIndex}">
+                        ${challenge.label}
+                    </label>
+                    <input type="${challenge.type}" class="captcha-field"
+                        id="captcha-${challengeIndex}" required>
+                `;
+
+                form.insertBefore(fieldContainer, form.querySelector(".wrap"));
+                message.textContent = `CAPTCHA ${challengeIndex + 1} ajouté : remplis-le pour continuer.`;
+                document.querySelector(`#captcha-${challengeIndex}`).focus();
+                return;
+            }
+
+            users.push({
+                email,
+                passwordHash: await hashPassword(password),
+                // age
+
+            });
+
+            localStorage.setItem("users", JSON.stringify(users));
+            message.textContent = "Compte créé avec succès.";
+            form.reset();
+            window.location.href = "login.html";
+        });
+    </script>
+</body>
+
+</html>

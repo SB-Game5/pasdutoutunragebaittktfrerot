@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>connexion au site mega cool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="main">
+        <h1>connecte toi</h1>
+
+        <form id="login-form">
+            <label for="first">
+                eMail:
+            </label>
+            <input type="email" id="first" name="first"
+                placeholder="ton eMail" required>
+            <br/>
+            <label for="mot de passe">
+                Mot de Passe:
+            </label>
+            <input type="password" id="password" name="password" 
+                placeholder="entrer ton mot de passe" required>
+
+            <div class="wrap">
+                <button type="submit">
+                    Se connecter
+                </button>
+            </div>
+        </form>
+        
+        <p id="login-message" role="alert"></p>
+
+        <p>pas de compte?
+            <a href="register.html" style="text-decoration: none;">
+                Crée en un !
+            </a>
+        </p>
+    </div>
+
+    <script>
+        const loginForm = document.querySelector("#login-form");
+        const loginMessage = document.querySelector("#login-message");
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(hash))
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const email = document.querySelector("#first").value.trim().toLowerCase();
+            const password = document.querySelector("#password").value;
+            const users = JSON.parse(localStorage.getItem("users") || "[]");
+            const passwordHash = await hashPassword(password);
+            const user = users.find(item => item.email === email);
+
+            if (!user || user.passwordHash !== passwordHash) {
+                loginMessage.textContent = "eMail ou mot de passe incorrect.";
+                return;
+            }
+
+            loginMessage.textContent = "Connexion réussie.";
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+
+</html>
